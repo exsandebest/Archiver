@@ -31,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    ui->progressBar->hide();
 }
 
 MainWindow::~MainWindow()
@@ -165,6 +165,9 @@ void MainWindow::buildTrueTable(){
 
 
 void MainWindow::encode(){
+    ui->progressBar->show();
+    ui->progressBar->setMaximum(0);
+    ui->progressBar->setValue(0);
     root->clear();
     root = nullptr;
     arr.clear();
@@ -222,6 +225,7 @@ void MainWindow::encode(){
     for (q = arr.begin(); q != arr.end(); ++q){
         sum += q->second * table[q->first].size();
     }
+    ui->progressBar->setMaximum(sum/8);
     unsigned char tmpCharSpecial;
     for (int j = 56; j >= 0; j-=8){
         tmpCharSpecial = (unsigned char)(sum >> j);
@@ -232,6 +236,7 @@ void MainWindow::encode(){
     int k = 0;
     unsigned char z;
     while (!fin.eof()){
+        ui->progressBar->setValue(ui->progressBar->value() + 1);
         fin.read(&c,sizeof(char));
         (unsigned char) c;
         if(fin.eof()) break;
@@ -255,11 +260,15 @@ void MainWindow::encode(){
     fout << sum;
     fout.close();
     fin.close();
+    ui->progressBar->hide();
 }
 
 
 
 void MainWindow::decode(){
+    ui->progressBar->show();
+    ui->progressBar->setMinimum(0);
+    ui->progressBar->setValue(0);
     ifstream fin(currentFilePath.toStdString(),ios::binary);
     char c;
     fin.read(&c,sizeof(char));
@@ -348,9 +357,11 @@ void MainWindow::decode(){
         rawDataLen |= tmplong;
     }
     long long RDLByte = (rawDataLen/8 + (rawDataLen%8?1:0));
+    ui->progressBar->setMaximum(RDLByte);
     Node * cur = localRoot;
     long long sch = 0;
     for (int j = 0; j < RDLByte; ++j){
+        ui->progressBar->setValue(ui->progressBar->value() + 1);
         fin.read(&m,sizeof(char));
         um = (unsigned char) m;
         for (int k = 0; k < 8; ++k){
@@ -372,6 +383,7 @@ void MainWindow::decode(){
     }
     fout.close();
     fin.close();
+    ui->progressBar->hide();
 }
 
 

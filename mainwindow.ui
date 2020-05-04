@@ -63,7 +63,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Chose the file</string>
+     <string>Select a file</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -85,6 +85,19 @@
     </property>
     <property name="readOnly">
      <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QProgressBar" name="progressBar">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>190</y>
+      <width>291</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="value">
+     <number>24</number>
     </property>
    </widget>
   </widget>
