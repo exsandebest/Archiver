@@ -4,25 +4,22 @@
 #include <QFileDialog>
 #include <QString>
 #include <QByteArray>
-#include <QDebug>
 #include <fstream>
 #include <iostream>
 #include <QMessageBox>
 
-
 using namespace std;
 
-QString currentFilePath = "";
-
 const QString SEPARATOR = "/";
-
 
 map<unsigned char,int> arr;
 map<unsigned char,vector<bool>> table;
 map<unsigned char, QString> trueTable;
 vector<bool> code;
 
+QString currentFilePath = "";
 Node * root;
+
 
 bool comp(Node * & a, Node * & b){
     return a->k < b->k;
@@ -74,9 +71,9 @@ QString MainWindow::getPath(QString str){
 
 QString MainWindow::getFileExtension(QString fn){
     QString exp="";
-        exp=fn.mid(fn.lastIndexOf(".")+1);
-        exp=exp.toLower();
-        return exp;
+    exp=fn.mid(fn.lastIndexOf(".")+1);
+    exp=exp.toLower();
+    return exp;
 }
 
 QString MainWindow::cutPath(QString str){
@@ -96,7 +93,6 @@ QString MainWindow::cutPath(QString str){
 
 void MainWindow::on_btnOpen_clicked()
 {
-
     currentFilePath = QFileDialog::getOpenFileName(this, "Directory Dialog", "");
     ui->linePath->setText(currentFilePath);
 }
@@ -134,7 +130,6 @@ void MainWindow::buildTree(){
         }
         root = v.front();
     }
-
 }
 
 
@@ -190,9 +185,6 @@ void MainWindow::encode(){
     buildTrueTable();
     map<unsigned char,int>::iterator h;
     QString str = "";
-    /*for (h = arr.begin(); h != arr.end(); ++h){
-        qDebug () << QString(h->first) + " : " + QString::number(h->second);
-    }*/
     QString newName((cutExtension(currentFilePath)+".xxx"));
     cout << newName.toStdString();
     ofstream fout(newName.toStdString(),ios::binary);
@@ -229,14 +221,12 @@ void MainWindow::encode(){
     map<unsigned char, int> :: iterator q;
     for (q = arr.begin(); q != arr.end(); ++q){
         sum += q->second * table[q->first].size();
-       }
-    qDebug() << "RawDataLength: " + QString::number(sum);
+    }
     unsigned char tmpCharSpecial;
     for (int j = 56; j >= 0; j-=8){
         tmpCharSpecial = (unsigned char)(sum >> j);
         fout << tmpCharSpecial;
     }
-
     ifstream fin(currentFilePath.toStdString(),ios::binary);
     c = 0;
     int k = 0;
@@ -269,9 +259,6 @@ void MainWindow::encode(){
 
 
 
-
-
-
 void MainWindow::decode(){
     ifstream fin(currentFilePath.toStdString(),ios::binary);
     char c;
@@ -284,7 +271,6 @@ void MainWindow::decode(){
         (unsigned char) c;
         originalName += c;
     }
-    qDebug() << (getPath(currentFilePath) + SEPARATOR + originalName);
     ofstream fout((getPath(currentFilePath) + SEPARATOR + originalName).toStdString(),ios::binary);
     char c1, c2;
     unsigned char uc1, uc2;
@@ -297,7 +283,6 @@ void MainWindow::decode(){
     len |= uc2;
     Node * localRoot = new Node;
     Node * p = localRoot;
-
     for (int i = 0; i < len; ++i){
         char tmpChar;
         fin.read(&tmpChar,sizeof(char));
@@ -325,7 +310,7 @@ void MainWindow::decode(){
                     break;
                 }
             }
-        }        
+        }
         p = localRoot;
         for (int j = 0; j < ln; ++j){
             if (v[j]){
@@ -352,46 +337,41 @@ void MainWindow::decode(){
         }
         v.clear();
     }
-        long long rawDataLen = 0;
-        char m;
-        unsigned char um;
-        for (int j = 7; j >=0; --j){
-            fin.read(&m,sizeof(char));
-            um = (unsigned char) m;
-            long long tmplong = um;
-            tmplong <<=(j*8);
-            rawDataLen |= tmplong;
-        }
-        qDebug() << "Decode - RawDataLength: " << rawDataLen;
-
-        long long RDLByte = (rawDataLen/8 + (rawDataLen%8?1:0));
-        qDebug() << "Decode - RawDataByteLength: " << RDLByte;
-        Node * cur = localRoot;
-        long long sch = 0;
-        for (int j = 0; j < RDLByte; ++j){
-            fin.read(&m,sizeof(char));
-            um = (unsigned char) m;
-            for (int k = 0; k < 8; ++k){
-                if (um&128){
-                    cur = cur->r;
-                } else {
-                    cur = cur->l;
-                }
-                if (cur->b){
-                    fout << cur->c;
-                    cur = localRoot;
-                    QCoreApplication::processEvents();
-                }
-               um<<=1;
-               ++sch;
-               if (sch == rawDataLen) break;
-
+    long long rawDataLen = 0;
+    char m;
+    unsigned char um;
+    for (int j = 7; j >=0; --j){
+        fin.read(&m,sizeof(char));
+        um = (unsigned char) m;
+        long long tmplong = um;
+        tmplong <<=(j*8);
+        rawDataLen |= tmplong;
+    }
+    long long RDLByte = (rawDataLen/8 + (rawDataLen%8?1:0));
+    Node * cur = localRoot;
+    long long sch = 0;
+    for (int j = 0; j < RDLByte; ++j){
+        fin.read(&m,sizeof(char));
+        um = (unsigned char) m;
+        for (int k = 0; k < 8; ++k){
+            if (um&128){
+                cur = cur->r;
+            } else {
+                cur = cur->l;
             }
-        }
+            if (cur->b){
+                fout << cur->c;
+                cur = localRoot;
+                QCoreApplication::processEvents();
+            }
+            um<<=1;
+            ++sch;
+            if (sch == rawDataLen) break;
 
+        }
+    }
     fout.close();
     fin.close();
-
 }
 
 
