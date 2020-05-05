@@ -171,6 +171,7 @@ void MainWindow::encode(){
     ui->progressBar->setMaximum(0);
     ui->progressBar->setValue(0);
     ui->progressBar->show();
+    QApplication::processEvents();
     root->clear();
     root = nullptr;
     arr.clear();
@@ -275,6 +276,7 @@ void MainWindow::decode(){
     ui->progressBar->setMinimum(0);
     ui->progressBar->setValue(0);
     ui->progressBar->show();
+    QApplication::processEvents();
     ifstream fin(currentFilePath.toStdString(),ios::binary);
     char c;
     fin.read(&c,sizeof(char));
