@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->progressBar->hide();
+    ui->lbl_process->hide();
 }
 
 MainWindow::~MainWindow()
@@ -165,9 +166,11 @@ void MainWindow::buildTrueTable(){
 
 
 void MainWindow::encode(){
-    ui->progressBar->show();
+    ui->lbl_process->setText("Encoding...");
+    ui->lbl_process->show();
     ui->progressBar->setMaximum(0);
     ui->progressBar->setValue(0);
+    ui->progressBar->show();
     root->clear();
     root = nullptr;
     arr.clear();
@@ -261,14 +264,17 @@ void MainWindow::encode(){
     fout.close();
     fin.close();
     ui->progressBar->hide();
+    ui->lbl_process->hide();
 }
 
 
 
 void MainWindow::decode(){
-    ui->progressBar->show();
+    ui->lbl_process->setText("Decoding...");
+    ui->lbl_process->show();
     ui->progressBar->setMinimum(0);
     ui->progressBar->setValue(0);
+    ui->progressBar->show();
     ifstream fin(currentFilePath.toStdString(),ios::binary);
     char c;
     fin.read(&c,sizeof(char));
@@ -384,6 +390,7 @@ void MainWindow::decode(){
     fout.close();
     fin.close();
     ui->progressBar->hide();
+    ui->lbl_process->hide();
 }
 
 

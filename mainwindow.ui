@@ -100,6 +100,27 @@
      <number>24</number>
     </property>
    </widget>
+   <widget class="QLabel" name="lbl_process">
+    <property name="geometry">
+     <rect>
+      <x>166</x>
+      <y>170</y>
+      <width>81</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
