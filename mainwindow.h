@@ -43,7 +43,6 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    QString getFileExtension(QString fn);
     void buildTree();
     void buildTable(Node * p);
     void buildTrueTable();

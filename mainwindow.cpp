@@ -71,11 +71,10 @@ QString MainWindow::getPath(QString str){
     return res;
 }
 
-QString MainWindow::getFileExtension(QString fn){
-    QString exp="";
-    exp=fn.mid(fn.lastIndexOf(".")+1);
-    exp=exp.toLower();
-    return exp;
+QString MainWindow::getExtension(QString fn){
+    QString exp = "";
+    exp = fn.mid(fn.lastIndexOf(".") + 1);
+    return exp.toLower();
 }
 
 QString MainWindow::cutPath(QString str){
@@ -194,7 +193,7 @@ void MainWindow::encode(){
     buildTrueTable();
     map<unsigned char,int>::iterator h;
     QString str = "";
-    QString newName((cutExtension(currentFilePath)+".xxx"));
+    QString newName(currentFilePath + ".xxx");
     cout << newName.toStdString();
     ofstream fout(newName.toStdString(),ios::binary);
     fout << (unsigned char)(cutPath(newName).length());
@@ -392,21 +391,6 @@ void MainWindow::decode(){
     ui->lbl_process->hide();
 }
 
-
-
-QString MainWindow::getExtension(QString s){
-    QString res = "";
-    bool fl = 1;
-    for (int i = s.size()-1; i>=0; --i){
-        if (s[i] == "."){
-            fl = 0;
-        }
-        if (fl){
-            res = s[i]+res;
-        }
-    }
-    return res;
-}
 void MainWindow::on_btnEncode_clicked()
 {
     if (getExtension(currentFilePath) == "xxx"){
