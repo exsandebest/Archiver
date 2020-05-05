@@ -1,5 +1,5 @@
 # Archiver
-A simple archiving application based on the Huffman algorithm
+A simple archiving Qt application based on the Huffman algorithm
 ## Features
 * Simple Qt interface
 * Maximum length of file name - 256 symbols (with extension)
