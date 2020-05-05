@@ -183,6 +183,7 @@ void MainWindow::encode(){
     while(!fiin.eof()){
         fiin.read(&c,sizeof(char));
         uc = (unsigned char) c;
+        QApplication::processEvents();
         ++arr[uc];
     }
     --arr[uc];
@@ -241,7 +242,6 @@ void MainWindow::encode(){
     while (!fin.eof()){
         ui->progressBar->setValue(ui->progressBar->value() + 1);
         fin.read(&c,sizeof(char));
-        (unsigned char) c;
         if(fin.eof()) break;
         vector<bool> v = table[c];
         for (int j = 0; j < v.size(); ++j){
@@ -278,12 +278,10 @@ void MainWindow::decode(){
     ifstream fin(currentFilePath.toStdString(),ios::binary);
     char c;
     fin.read(&c,sizeof(char));
-    (unsigned char) c;
     int len = int(c);
     QString originalName = "";
     for (int i = 0; i < len; ++i){
         fin.read(&c,sizeof(char));
-        (unsigned char) c;
         originalName += c;
     }
     ofstream fout((getPath(currentFilePath) + SEPARATOR + originalName).toStdString(),ios::binary);
@@ -301,9 +299,7 @@ void MainWindow::decode(){
     for (int i = 0; i < len; ++i){
         char tmpChar;
         fin.read(&tmpChar,sizeof(char));
-        (unsigned char) tmpChar;
         fin.read(&c,sizeof(char));
-        (unsigned char) c;
         int ln = c;
         int byteLn = ln/8 + (ln%8?1:0);
         char t;
