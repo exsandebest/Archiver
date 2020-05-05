@@ -3,6 +3,7 @@ A simple archiving application based on the Huffman algorithm
 ## Features
 * Simple Qt interface
 * Maximum length of file name - 256 symbols (with extension)
+* Russian letters are **not supported** in the file name
 * Maximum size of file -  1 GByte
 * Archived file has `.xxx` extension 
 ## Structure
