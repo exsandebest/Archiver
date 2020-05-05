@@ -194,9 +194,8 @@ void MainWindow::encode(){
     map<unsigned char,int>::iterator h;
     QString str = "";
     QString newName(currentFilePath + ".xxx");
-    cout << newName.toStdString();
     ofstream fout(newName.toStdString(),ios::binary);
-    fout << (unsigned char)(cutPath(newName).length());
+    fout << (unsigned char)(cutPath(currentFilePath).length());
     fout << cutPath(currentFilePath).toStdString();
     fout << (unsigned char)(arr.size()>>8);
     fout << (unsigned char)(arr.size());
@@ -239,7 +238,7 @@ void MainWindow::encode(){
     ifstream fin(currentFilePath.toStdString(),ios::binary);
     c = 0;
     int k = 0;
-    unsigned char z;
+    unsigned char z = 0;
     while (!fin.eof()){
         ui->progressBar->setValue(ui->progressBar->value() + 1);
         fin.read(&c,sizeof(char));
