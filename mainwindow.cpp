@@ -31,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    this->setFixedSize(414, 264);
+    this->setFixedSize(410, 180);
     ui->progressBar->hide();
     ui->lbl_process->hide();
 }

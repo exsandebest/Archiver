@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>414</width>
-    <height>264</height>
+    <width>410</width>
+    <height>180</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Archiver</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="src.qrc">
     <normaloff>:/img/icon.ico</normaloff>:/img/icon.ico</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -22,7 +22,7 @@
     <property name="geometry">
      <rect>
       <x>160</x>
-      <y>80</y>
+      <y>20</y>
       <width>91</width>
       <height>31</height>
      </rect>
@@ -34,51 +34,35 @@
    <widget class="QPushButton" name="btnEncode">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>10</y>
+      <x>10</x>
+      <y>20</y>
       <width>131</width>
       <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>ENCODE</string>
+     <string>Encode</string>
     </property>
    </widget>
    <widget class="QPushButton" name="btnDecode">
     <property name="geometry">
      <rect>
-      <x>260</x>
-      <y>10</y>
+      <x>270</x>
+      <y>20</y>
       <width>131</width>
       <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>DECODE</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>50</y>
-      <width>91</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Select a file</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <string>Decode</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="linePath">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>140</y>
-      <width>371</width>
+      <x>10</x>
+      <y>70</y>
+      <width>391</width>
       <height>31</height>
      </rect>
     </property>
@@ -95,7 +79,7 @@
     <property name="geometry">
      <rect>
       <x>60</x>
-      <y>200</y>
+      <y>140</y>
       <width>291</width>
       <height>23</height>
      </rect>
@@ -108,7 +92,7 @@
     <property name="geometry">
      <rect>
       <x>160</x>
-      <y>180</y>
+      <y>110</y>
       <width>91</width>
       <height>20</height>
      </rect>
@@ -126,18 +110,9 @@
     </property>
    </widget>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>414</width>
-     <height>21</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources/>
+ <resources>
+  <include location="src.qrc"/>
+ </resources>
  <connections/>
 </ui>
