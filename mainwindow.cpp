@@ -1,30 +1,24 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QFile>
 #include <QFileDialog>
-#include <QString>
-#include <QByteArray>
 #include <fstream>
-#include <iostream>
 #include <QMessageBox>
 
 using namespace std;
 
 const QString SEPARATOR = "/";
 
-map<unsigned char,int> arr;
-map<unsigned char,vector<bool>> table;
-map<unsigned char, QString> trueTable;
-vector<bool> code;
+map<unsigned char, int> arr;
+map<unsigned char, QVector<bool>> table;
+map<unsigned char, QString> stringTable;
+QVector<bool> code;
 
 QString currentFilePath = "";
 Node * root;
 
-
 bool comp(Node * & a, Node * & b){
     return a->k < b->k;
 }
-
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -41,56 +35,18 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
-QString MainWindow::cutExtension(QString name){
-    QString res = "";
-    bool flag = 0;
-    for (int i = name.size()-1; i>=0; --i){
-        if (flag){
-            res = name[i] + res;
-        }
-        if (name[i] == '.'){
-            flag = 1;
-        }
-    }
-    return res;
-}
-
-
 QString MainWindow::getPath(QString str){
-    QString res = "";
-    bool flag = 0;
-    for (int i = str.size()-1; i>=0; --i){
-        if (flag){
-            res = str[i] + res;
-        }
-        if (str[i] == SEPARATOR){
-            flag = 1;
-        }
-    }
-    return res;
-}
-
-QString MainWindow::getExtension(QString fn){
-    QString exp = "";
-    exp = fn.mid(fn.lastIndexOf(".") + 1);
-    return exp.toLower();
+    return str.left(str.lastIndexOf(SEPARATOR));
 }
 
 QString MainWindow::cutPath(QString str){
-    QString res = "";
-    bool flag = 1;
-    for (int i = str.size()-1; i>=0; --i){
-        if (str[i] == SEPARATOR){
-            flag = 0;
-        }
-        if (flag){
-            res = str[i] + res;
-        }
-
-    }
-    return res;
+    return str.right(str.size() - str.lastIndexOf(SEPARATOR) - 1);
 }
+
+QString MainWindow::getExtension(QString fn){
+    return fn.mid(fn.lastIndexOf(".") + 1).toLower();
+}
+
 
 void MainWindow::on_btnOpen_clicked()
 {
@@ -100,7 +56,7 @@ void MainWindow::on_btnOpen_clicked()
 
 void MainWindow::buildTree(){
     QVector<Node *> v;
-    map<unsigned char,int> :: iterator k;
+    map<unsigned char, int> :: iterator k;
     for (k = arr.begin(); k != arr.end(); ++k){
         Node * p = new Node ();
         p->c = k->first;
@@ -118,7 +74,7 @@ void MainWindow::buildTree(){
     } else {
         while (v.size() != 1){
             sort(v.begin(), v.end(), comp);
-            Node * tl, *tr;
+            Node *tl, *tr;
             tl = v.front();
             v.pop_front();
             tr = v.front();
@@ -134,7 +90,6 @@ void MainWindow::buildTree(){
 }
 
 
-
 void MainWindow::buildTable(Node * p){
     if (p->l != nullptr){
         code.push_back(0);
@@ -144,23 +99,23 @@ void MainWindow::buildTable(Node * p){
         code.push_back(1);
         buildTable(p->r);
     }
-    if(p->b) table[p->c] = code;
+    if (p->b) table[p->c] = code;
     code.pop_back();
 }
 
-void MainWindow::buildTrueTable(){
-    map<unsigned char,vector<bool>>::iterator k;
+void MainWindow::buildStringTable(){
+    map<unsigned char, QVector<bool>>::iterator k;
     QString str = "";
     for (k = table.begin(); k != table.end(); ++k){
         str = "";
         for (int i = 0; i < k->second.size(); ++i){
             if (k->second[i]){
-                str+="1";
+                str += "1";
             } else {
-                str+="0";
+                str += "0";
             }
         }
-        trueTable[k->first] = str;
+        stringTable[k->first] = str;
     }
 }
 
@@ -176,7 +131,7 @@ void MainWindow::encode(){
     root = nullptr;
     arr.clear();
     table.clear();
-    trueTable.clear();
+    stringTable.clear();
     code.clear();
     char c;
     unsigned char uc;
@@ -190,7 +145,7 @@ void MainWindow::encode(){
     --arr[uc];
     buildTree();
     buildTable(root);
-    buildTrueTable();
+    buildStringTable();
     map<unsigned char,int>::iterator h;
     QString str = "";
     QString newName(currentFilePath + ".xxx");
@@ -208,7 +163,7 @@ void MainWindow::encode(){
         if (table[it->first].size()%8){
             tmpS.fill('0',8-(table[it->first].size()%8));
         }
-        tmpS = trueTable[it->first] + tmpS;
+        tmpS = stringTable[it->first] + tmpS;
         unsigned char mychar = 0;
         int pip = 0;
         for (int i = 0; i < tmpS.size(); ++i){
@@ -243,7 +198,7 @@ void MainWindow::encode(){
         ui->progressBar->setValue(ui->progressBar->value() + 1);
         fin.read(&c,sizeof(char));
         if(fin.eof()) break;
-        vector<bool> v = table[c];
+        QVector<bool> v = table[c];
         for (int j = 0; j < v.size(); ++j){
             z <<= 1;
             if (v[j]){
@@ -334,7 +289,6 @@ void MainWindow::decode(){
                     p->b = true;
                     p->c = tmpChar;
                 }
-
             } else {
                 if (p->l == nullptr){
                     p->l = new Node;
@@ -344,7 +298,6 @@ void MainWindow::decode(){
                     p->b = true;
                     p->c = tmpChar;
                 }
-
             }
         }
         v.clear();
@@ -381,7 +334,6 @@ void MainWindow::decode(){
             um<<=1;
             ++sch;
             if (sch == rawDataLen) break;
-
         }
     }
     fout.close();
