@@ -19,6 +19,6 @@ A simple archiving Qt application based on the Huffman algorithm
 ## Interface - example
 ![Interface](https://raw.githubusercontent.com/exsandebest/Archiver/master/examples/screenshots/encoding.png)
 ## Authors
-* exsandebest
+* [exsandebest](https://github.com/exsandebest) ([Repository](https://github.com/exsandebest/Archiver))
 * [klimkomx](https://github.com/klimkomx) ([Repository](https://github.com/klimkomx/HuffmanArchivator))
 * [hensuto](https://gitlab.com/hensuto) ([Repository](https://gitlab.com/hensuto/huffman-archiver))
