@@ -9,9 +9,9 @@ using namespace std;
 const QString SEPARATOR = "/";
 
 map<unsigned char, int> arr;
-map<unsigned char, QVector<bool>> table;
+map<unsigned char, vector<bool>> table;
 map<unsigned char, QString> stringTable;
-QVector<bool> code;
+vector<bool> code;
 
 QString currentFilePath = "";
 Node * root;
@@ -55,18 +55,18 @@ void MainWindow::on_btnOpen_clicked()
 }
 
 void MainWindow::buildTree(){
-    QVector<Node *> v;
+    vector<Node *> v;
     map<unsigned char, int> :: iterator k;
     for (k = arr.begin(); k != arr.end(); ++k){
-        Node * p = new Node ();
+        Node * p = new Node();
         p->c = k->first;
         p->k = k->second;
         p->b = true;
         v.push_back(p);
     }
     if (v.size() == 1){
-        Node * q = new Node;
-        q->l = new Node;
+        Node * q = new Node();
+        q->l = new Node();
         q->l->b = true;
         q->l->c = v.front()->c;
         q->l->k = v.front()->k;
@@ -104,18 +104,18 @@ void MainWindow::buildTable(Node * p){
 }
 
 void MainWindow::buildStringTable(){
-    map<unsigned char, QVector<bool>>::iterator k;
-    QString str = "";
+    map<unsigned char, vector<bool>> :: iterator k;
+    QString s = "";
     for (k = table.begin(); k != table.end(); ++k){
-        str = "";
+        s = "";
         for (int i = 0; i < k->second.size(); ++i){
             if (k->second[i]){
-                str += "1";
+                s += "1";
             } else {
-                str += "0";
+                s += "0";
             }
         }
-        stringTable[k->first] = str;
+        stringTable[k->first] = s;
     }
 }
 
@@ -146,7 +146,7 @@ void MainWindow::encode(){
     buildTree();
     buildTable(root);
     buildStringTable();
-    map<unsigned char,int>::iterator h;
+    map<unsigned char,int> :: iterator h;
     QString str = "";
     QString newName(currentFilePath + ".xxx");
     ofstream fout(newName.toStdString(),ios::binary);
@@ -156,24 +156,24 @@ void MainWindow::encode(){
     fout << (unsigned char)(arr.size());
     map <unsigned char, int> :: iterator it;
     for (it = arr.begin(); it != arr.end(); ++it){
-        unsigned char kekus = it->first;
-        fout << kekus;
+        unsigned char charSelf = it->first;
+        fout << charSelf;
         fout << (unsigned char)(table[it->first].size());
         QString tmpS = "";
         if (table[it->first].size()%8){
-            tmpS.fill('0',8-(table[it->first].size()%8));
+            tmpS.fill('0', 8-(table[it->first].size()%8));
         }
         tmpS = stringTable[it->first] + tmpS;
         unsigned char mychar = 0;
-        int pip = 0;
+        int bufferCount = 0;
         for (int i = 0; i < tmpS.size(); ++i){
             mychar <<= 1;
             if (tmpS[i] == "1"){
                 mychar |= 1;
             }
-            ++pip;
-            if (pip == 8){
-                pip = 0;
+            ++bufferCount;
+            if (bufferCount == 8){
+                bufferCount = 0;
                 fout << mychar;
                 mychar = 0;
             }
@@ -190,15 +190,15 @@ void MainWindow::encode(){
         tmpCharSpecial = (unsigned char)(sum >> j);
         fout << tmpCharSpecial;
     }
-    ifstream fin(currentFilePath.toStdString(),ios::binary);
+    ifstream fin(currentFilePath.toStdString(), ios::binary);
     c = 0;
     int k = 0;
     unsigned char z = 0;
     while (!fin.eof()){
         ui->progressBar->setValue(ui->progressBar->value() + 1);
-        fin.read(&c,sizeof(char));
+        fin.read(&c, sizeof(char));
         if(fin.eof()) break;
-        QVector<bool> v = table[c];
+        vector<bool> v = table[c];
         for (int j = 0; j < v.size(); ++j){
             z <<= 1;
             if (v[j]){
@@ -231,41 +231,41 @@ void MainWindow::decode(){
     ui->progressBar->setValue(0);
     ui->progressBar->show();
     QApplication::processEvents();
-    ifstream fin(currentFilePath.toStdString(),ios::binary);
+    ifstream fin(currentFilePath.toStdString(), ios::binary);
     char c;
-    fin.read(&c,sizeof(char));
+    fin.read(&c, sizeof(char));
     int len = int(c);
     QString originalName = "";
     for (int i = 0; i < len; ++i){
-        fin.read(&c,sizeof(char));
+        fin.read(&c, sizeof(char));
         originalName += c;
     }
-    ofstream fout((getPath(currentFilePath) + SEPARATOR + originalName).toStdString(),ios::binary);
+    ofstream fout((getPath(currentFilePath) + SEPARATOR + originalName).toStdString(), ios::binary);
     char c1, c2;
     unsigned char uc1, uc2;
     len = 0;
-    fin.read(&c1,sizeof(char));
+    fin.read(&c1, sizeof(unsigned char));
     uc1 = (unsigned char) c1;
     len = ((int)uc1)<<8;
-    fin.read(&c2,sizeof(char));
+    fin.read(&c2, sizeof(char));
     uc2 = (unsigned char) c2;
     len |= uc2;
-    Node * localRoot = new Node;
+    Node * localRoot = new Node();
     Node * p = localRoot;
     for (int i = 0; i < len; ++i){
         char tmpChar;
-        fin.read(&tmpChar,sizeof(char));
-        fin.read(&c,sizeof(char));
+        fin.read(&tmpChar, sizeof(char));
+        fin.read(&c, sizeof(char));
         int ln = c;
-        int byteLn = ln/8 + (ln%8?1:0);
+        int byteLn = ln/8 + (ln%8 ? 1 : 0);
         char t;
         unsigned char ut;
         vector<bool> v;
         int cnt = 0;
         for (int j = 0; j < byteLn; ++j){
-            fin.read(&t,sizeof(char));
+            fin.read(&t, sizeof(char));
             ut = (unsigned char) t;
-            for (int k = 0; k < 8 ; ++k){
+            for (int k = 0; k < 8; ++k){
                 if (ut&128){
                     v.push_back(1);
                 } else {
@@ -305,8 +305,8 @@ void MainWindow::decode(){
     long long rawDataLen = 0;
     char m;
     unsigned char um;
-    for (int j = 7; j >=0; --j){
-        fin.read(&m,sizeof(char));
+    for (int j = 7; j >= 0; --j){
+        fin.read(&m, sizeof(char));
         um = (unsigned char) m;
         long long tmplong = um;
         tmplong <<=(j*8);
@@ -331,7 +331,7 @@ void MainWindow::decode(){
                 cur = localRoot;
                 QCoreApplication::processEvents();
             }
-            um<<=1;
+            um <<= 1;
             ++sch;
             if (sch == rawDataLen) break;
         }
@@ -345,24 +345,23 @@ void MainWindow::decode(){
 void MainWindow::on_btnEncode_clicked()
 {
     if (getExtension(currentFilePath) == "xxx"){
-        QMessageBox::warning(this,"Sorry", "You can't encode '.xxx' files");
+        QMessageBox::warning(this, "Sorry", "You can't encode '.xxx' files");
         return;
     }
     if (currentFilePath != ""){
         encode();
-        QMessageBox::information(this,"OK", "Successfully encoded!");
+        QMessageBox::information(this, "OK", "Successfully encoded!");
     }
-
 }
 
 void MainWindow::on_btnDecode_clicked()
 {
     if (getExtension(currentFilePath) != "xxx"){
-        QMessageBox::warning(this,"Warning", "You can decode only '.xxx' files");
+        QMessageBox::warning(this, "Warning", "You can decode only '.xxx' files");
         return;
     }
     if (currentFilePath != ""){
         decode();
-        QMessageBox::information(this,"OK", "Successfully decoded!");
+        QMessageBox::information(this, "OK", "Successfully decoded!");
     }
 }
