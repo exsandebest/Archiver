@@ -3,31 +3,28 @@
 
 #include <QMainWindow>
 
-
 struct Node {
     bool b;
     unsigned char c;
     int k;
     Node *l, *r;
 
-    Node(){
+    Node() {
         l = r = nullptr;
         k = 0;
         b = false;
     }
 
-    Node(Node * x, Node *y){
+    Node(Node *x, Node *y) {
         l = x;
         r = y;
         k = x->k + y->k;
         b = false;
     }
 
-    void clear(){
-        clear(this);
-    }
+    void clear() { clear(this); }
 
-    void clear(Node * p){
+    void clear(Node *p) {
         if (p == nullptr) return;
         clear(p->l);
         clear(p->r);
@@ -35,20 +32,20 @@ struct Node {
     }
 };
 
-
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+namespace Ui {
+class MainWindow;
+}
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void buildTree();
-    void buildTable(Node * p);
+    void buildTable(Node *p);
     void buildStringTable();
     void encode();
     void decode();
@@ -64,4 +61,4 @@ private slots:
 private:
     Ui::MainWindow *ui;
 };
-#endif // MAINWINDOW_H
+#endif  // MAINWINDOW_H
