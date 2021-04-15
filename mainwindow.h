@@ -2,6 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QGridLayout>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QProgressBar>
 
 struct Node {
     bool b;
@@ -52,13 +56,13 @@ public:
     QString getPath(QString);
     QString cutPath(QString);
     QString getExtension(QString);
-
-private slots:
     void on_btnOpen_clicked();
     void on_btnEncode_clicked();
     void on_btnDecode_clicked();
 
 private:
     Ui::MainWindow *ui;
+    QProgressBar *progressBar;
+    QLineEdit *linePath;
 };
 #endif  // MAINWINDOW_H

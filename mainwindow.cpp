@@ -3,14 +3,17 @@
 #include <QFileDialog>
 #include <fstream>
 #include <QMessageBox>
+
+
 using namespace std;
 
-const QString SEPARATOR = "/";
+const static QString SEPARATOR = "/";
 map<unsigned char, int> arr;
 map<unsigned char, vector<bool>> table;
 map<unsigned char, QString> stringTable;
 vector<bool> code;
 QString currentFilePath = "";
+QPushButton* buttons[3];
 Node *root;
 
 bool comp(Node *&a, Node *&b) { return a->k < b->k; }
@@ -18,9 +21,30 @@ bool comp(Node *&a, Node *&b) { return a->k < b->k; }
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-    this->setFixedSize(410, 180);
-    ui->progressBar->hide();
-    ui->lbl_process->hide();
+    this->setMaximumSize(450, 150);
+
+    QGridLayout *mainLayout = new QGridLayout(this->centralWidget());
+
+    QPushButton *btnEncode = buttons[0] = new QPushButton("Encode");
+    connect(btnEncode, &QPushButton::clicked, this, &MainWindow::on_btnEncode_clicked);
+    mainLayout->addWidget(btnEncode, 0, 0);
+
+    QPushButton *btnOpen = buttons[1] = new QPushButton("Open");
+    connect(btnOpen, &QPushButton::clicked, this, &MainWindow::on_btnOpen_clicked);
+    mainLayout->addWidget(btnOpen, 0, 1);
+
+    QPushButton *btnDecode = buttons[2] = new QPushButton("Decode");
+    connect(btnDecode, &QPushButton::clicked, this, &MainWindow::on_btnDecode_clicked);
+    mainLayout->addWidget(btnDecode, 0, 2);
+
+    linePath = new QLineEdit();
+    linePath->setReadOnly(true);
+    mainLayout->addWidget(linePath, 1, 0, 1, 3);
+
+    progressBar = new QProgressBar();
+    mainLayout->addWidget(progressBar, 2, 0, 1, 3);
+
+    progressBar->setVisible(false);
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -39,7 +63,7 @@ QString MainWindow::getExtension(QString fn) {
 
 void MainWindow::on_btnOpen_clicked() {
     currentFilePath = QFileDialog::getOpenFileName(this, "Directory Dialog", "");
-    ui->linePath->setText(currentFilePath);
+    linePath->setText(currentFilePath);
 }
 
 void MainWindow::buildTree() {
@@ -112,12 +136,6 @@ void MainWindow::buildStringTable() {
 }
 
 void MainWindow::encode() {
-    ui->lbl_process->setText("Encoding...");
-    ui->lbl_process->show();
-    ui->progressBar->setMaximum(0);
-    ui->progressBar->setValue(0);
-    ui->progressBar->show();
-    QApplication::processEvents();
     root->clear();
     root = nullptr;
     arr.clear();
@@ -133,13 +151,12 @@ void MainWindow::encode() {
         QApplication::processEvents();
         ++arr[uc];
     }
-
     --arr[uc];
+
     buildTree();
     buildTable(root);
     buildStringTable();
     map<unsigned char, int>::iterator h;
-    QString str = "";
     QString newName(currentFilePath + ".xxx");
     ofstream fout(newName.toStdString(), ios::binary);
     fout << (unsigned char)(cutPath(currentFilePath).length());
@@ -180,7 +197,7 @@ void MainWindow::encode() {
         sum += q->second * table[q->first].size();
     }
 
-    ui->progressBar->setMaximum(sum / 8);
+    progressBar->setMaximum(sum / 8);
     unsigned char tmpCharSpecial;
     for (int j = 56; j >= 0; j -= 8) {
         tmpCharSpecial = (unsigned char)(sum >> j);
@@ -192,7 +209,7 @@ void MainWindow::encode() {
     int k = 0;
     unsigned char z = 0;
     while (!fin.eof()) {
-        ui->progressBar->setValue(ui->progressBar->value() + 1);
+        progressBar->setValue(progressBar->value() + 1);
         fin.read(&c, sizeof(char));
         if (fin.eof()) break;
         vector<bool> v = table[c];
@@ -217,16 +234,9 @@ void MainWindow::encode() {
     fout << sum;
     fout.close();
     fin.close();
-    ui->progressBar->hide();
-    ui->lbl_process->hide();
 }
 
 void MainWindow::decode() {
-    ui->lbl_process->setText("Decoding...");
-    ui->lbl_process->show();
-    ui->progressBar->setMinimum(0);
-    ui->progressBar->setValue(0);
-    ui->progressBar->show();
     QApplication::processEvents();
     ifstream fin(currentFilePath.toStdString(), ios::binary);
     char c;
@@ -319,11 +329,11 @@ void MainWindow::decode() {
     }
 
     long long RDLByte = (rawDataLen / 8 + (rawDataLen % 8 ? 1 : 0));
-    ui->progressBar->setMaximum(RDLByte);
+    progressBar->setMaximum(RDLByte);
     Node *cur = localRoot;
     long long sch = 0;
     for (int j = 0; j < RDLByte; ++j) {
-        ui->progressBar->setValue(ui->progressBar->value() + 1);
+        progressBar->setValue(progressBar->value() + 1);
         fin.read(&m, sizeof(char));
         um = (unsigned char)m;
         for (int k = 0; k < 8; ++k) {
@@ -347,30 +357,42 @@ void MainWindow::decode() {
 
     fout.close();
     fin.close();
-    ui->progressBar->hide();
-    ui->lbl_process->hide();
 }
 
 void MainWindow::on_btnEncode_clicked() {
     if (getExtension(currentFilePath) == "xxx") {
         QMessageBox::warning(this, "Sorry", "You can't encode '.xxx' files");
         return;
+    } else if (currentFilePath.isEmpty()) {
+        QMessageBox::warning(this, "Empty path", "Please select a file");
+        return;
     }
+    for (auto btn: buttons) btn->setDisabled(true);
+    progressBar->setMaximum(0);
+    progressBar->setValue(0);
+    progressBar->setVisible(true);
+    QApplication::processEvents();
+    encode();
+    progressBar->setVisible(false);
+    for (auto btn: buttons) btn->setDisabled(false);
+    QMessageBox::information(this, "OK", "Successfully encoded!");
 
-    if (currentFilePath != "") {
-        encode();
-        QMessageBox::information(this, "OK", "Successfully encoded!");
-    }
 }
 
 void MainWindow::on_btnDecode_clicked() {
     if (getExtension(currentFilePath) != "xxx") {
         QMessageBox::warning(this, "Warning", "You can decode only '.xxx' files");
         return;
+    } else if (currentFilePath.isEmpty()) {
+        QMessageBox::warning(this, "Empty path", "Please select a file");
+        return;
     }
-
-    if (currentFilePath != "") {
-        decode();
-        QMessageBox::information(this, "OK", "Successfully decoded!");
-    }
+    for (auto btn: buttons) btn->setDisabled(true);
+    progressBar->setMinimum(0);
+    progressBar->setValue(0);
+    progressBar->setVisible(true);
+    decode();
+    progressBar->setVisible(false);
+    for (auto btn: buttons) btn->setDisabled(false);
+    QMessageBox::information(this, "OK", "Successfully decoded!");
 }
