@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QProgressBar>
+#include <map>
 
 struct Node {
     bool b;
@@ -50,7 +51,6 @@ public:
     ~MainWindow();
     void buildTree();
     void buildTable(Node *p);
-    void buildStringTable();
     void encode();
     void decode();
     QString getPath(QString);
@@ -59,10 +59,13 @@ public:
     void on_btnOpen_clicked();
     void on_btnEncode_clicked();
     void on_btnDecode_clicked();
+    void reset();
+    QString currentFilePath = "";
 
 private:
     Ui::MainWindow *ui;
     QProgressBar *progressBar;
     QLineEdit *linePath;
+
 };
 #endif  // MAINWINDOW_H

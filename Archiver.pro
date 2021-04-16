@@ -1,4 +1,5 @@
-QT       += core gui
+QT       += core gui \
+            testlib
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -17,10 +18,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    test.cpp
 
 HEADERS += \
-    mainwindow.h
+    mainwindow.h \
+    test.h
 
 FORMS += \
     mainwindow.ui
