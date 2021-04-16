@@ -1,5 +1,4 @@
 #include "archiver.h"
-#include <QPushButton>
 #include <fstream>
 #include <QApplication>
 
@@ -11,7 +10,6 @@ const QChar SEPARATOR = '/';
 std::map<unsigned char, int> mainMap;
 std::map<unsigned char, QString> table;
 QString code;
-QPushButton* buttons[3];
 Node *root;
 
 bool comp(Node *&a, Node *&b) { return a->k < b->k; }
