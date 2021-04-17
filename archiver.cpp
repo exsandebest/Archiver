@@ -1,9 +1,7 @@
 #include "archiver.h"
-#include "mainwindow.h"
 #include <fstream>
 #include <QApplication>
 #include <QFile>
-#include <QPair>
 
 Archiver::Archiver(QProgressBar *progressBar) {
     this->progressBar = progressBar;

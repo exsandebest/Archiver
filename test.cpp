@@ -1,5 +1,4 @@
 #include "test.h"
-#include "mainwindow.h"
 #include <QFile>
 #include "archiver.h"
 
