@@ -29,7 +29,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     progressBar = new QProgressBar();
     mainLayout->addWidget(progressBar, 2, 0, 1, 3);
-
     progressBar->setVisible(false);
 
     a = new Archiver(progressBar);
@@ -38,44 +37,38 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::on_btnOpen_clicked() {
-    a->currentFilePath = QFileDialog::getOpenFileName(this, "Directory Dialog", "");
-    linePath->setText(a->currentFilePath);
+    path = QFileDialog::getOpenFileName(this, "Directory Dialog", "");
+    linePath->setText(path);
 }
 
 void MainWindow::on_btnEncode_clicked() {
-    if (a->getExtension(a->currentFilePath) == "xxx") {
-        QMessageBox::warning(this, "Sorry", "You can't encode '.xxx' files");
-        return;
-    } else if (a->currentFilePath.isEmpty()) {
-        QMessageBox::warning(this, "Empty path", "Please select a file");
-        return;
-    }
     for (auto btn: buttons) btn->setDisabled(true);
     progressBar->setMaximum(0);
     progressBar->setValue(0);
     progressBar->setVisible(true);
     QApplication::processEvents();
-    a->encode();
+    try {
+        a->encode(path);
+        QMessageBox::information(this, "OK", "Successfully encoded!");
+    } catch (std::pair<QString, QString> errorPair) {
+        QMessageBox::warning(this, errorPair.first, errorPair.second);
+    }
     progressBar->setVisible(false);
     for (auto btn: buttons) btn->setDisabled(false);
-    QMessageBox::information(this, "OK", "Successfully encoded!");
-
 }
 
 void MainWindow::on_btnDecode_clicked() {
-    if (a->getExtension(a->currentFilePath) != "xxx") {
-        QMessageBox::warning(this, "Warning", "You can decode only '.xxx' files");
-        return;
-    } else if (a->currentFilePath.isEmpty()) {
-        QMessageBox::warning(this, "Empty path", "Please select a file");
-        return;
-    }
     for (auto btn: buttons) btn->setDisabled(true);
     progressBar->setMinimum(0);
     progressBar->setValue(0);
     progressBar->setVisible(true);
-    a->decode();
+    try {
+        a->decode(path);
+        QMessageBox::information(this, "OK", "Successfully decoded!");
+    }  catch (std::pair<QString, QString> errorPair) {
+        QMessageBox::warning(this, errorPair.first, errorPair.second);
+    }
     progressBar->setVisible(false);
     for (auto btn: buttons) btn->setDisabled(false);
-    QMessageBox::information(this, "OK", "Successfully decoded!");
+
 }

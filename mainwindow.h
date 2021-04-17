@@ -32,6 +32,7 @@ private:
     QLineEdit *linePath;
     QProgressBar *progressBar;
     Archiver *a;
+    QString path;
 
 };
 #endif  // MAINWINDOW_H

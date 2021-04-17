@@ -11,16 +11,21 @@ class Archiver : public QObject
     Q_OBJECT
 public:
     Archiver(QProgressBar *progressBar = nullptr);
-    void buildTree();
-    void buildTable(Node *p);
-    void encode();
-    void decode();
     QString getPath(QString);
     QString cutPath(QString);
     QString getExtension(QString);
-    void reset();
-    QString currentFilePath = "";
+    void encode(QString);
+    void decode(QString);
+
+private:
+    QString filePath;
     QProgressBar *progressBar;
+    void reset();
+    void encode();
+    void decode();
+    void buildTree();
+    void buildTable(Node *);
+    std::pair<QString, QString> err(const char *, const char *);
 
 };
 

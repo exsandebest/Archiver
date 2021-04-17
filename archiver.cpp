@@ -1,6 +1,9 @@
 #include "archiver.h"
+#include "mainwindow.h"
 #include <fstream>
 #include <QApplication>
+#include <QFile>
+#include <QPair>
 
 Archiver::Archiver(QProgressBar *progressBar) {
     this->progressBar = progressBar;
@@ -22,8 +25,36 @@ QString Archiver::cutPath(QString str) {
     return str.right(str.size() - str.lastIndexOf(SEPARATOR) - 1);
 }
 
-QString Archiver::getExtension(QString fn) {
-    return fn.mid(fn.lastIndexOf(".") + 1).toLower();
+QString Archiver::getExtension(QString str) {
+    return str.mid(str.lastIndexOf(".") + 1).toLower();
+}
+
+std::pair<QString, QString> Archiver::err(const char * title, const char * text) {
+    return std::make_pair(QString(title), QString(text));
+}
+
+void Archiver::encode(QString path) {
+    if (path.isEmpty()) {
+        throw err("Empty path", "Please select a file");
+    } else if (!QFile(path).exists()) {
+        throw err("No such file", "File does not exist");
+    } else if (getExtension(path) == "xxx") {
+        throw err("Error", "You can't encode '.xxx' files");
+    }
+    filePath = path;
+    encode();
+}
+
+void Archiver::decode(QString path) {
+    if (path.isEmpty()) {
+        throw err("Empty path", "Please select a file");
+    } else if (!QFile(path).exists()) {
+        throw err("No such file", "File does not exist");
+    } else if (getExtension(path) != "xxx") {
+        throw err("Error", "You can decode only '.xxx' files");
+    }
+    filePath = path;
+    decode();
 }
 
 void Archiver::reset() {
@@ -88,7 +119,7 @@ void Archiver::buildTable(Node *p) {
 void Archiver::encode() {
     reset();
     char c;
-    std::ifstream fin(currentFilePath.toStdString(), std::ios::binary);
+    std::ifstream fin(filePath.toStdString(), std::ios::binary);
     while (!fin.eof()) {
         fin.read(&c, sizeof(char));
         QApplication::processEvents();
@@ -99,10 +130,10 @@ void Archiver::encode() {
     buildTree();
     buildTable(root);
     std::map<unsigned char, int>::iterator h;
-    QString newName(currentFilePath + ".xxx");
+    QString newName(filePath + ".xxx");
     std::ofstream fout(newName.toStdString(), std::ios::binary);
-    fout << (unsigned char)(cutPath(currentFilePath).length());
-    fout << cutPath(currentFilePath).toStdString();
+    fout << (unsigned char)(cutPath(filePath).length());
+    fout << cutPath(filePath).toStdString();
     fout << (unsigned char)(mainMap.size() >> 8);
     fout << (unsigned char)(mainMap.size());
     std::map<unsigned char, int>::iterator it;
@@ -183,7 +214,7 @@ void Archiver::encode() {
 void Archiver::decode() {
     reset();
     QApplication::processEvents();
-    std::ifstream fin(currentFilePath.toStdString(), std::ios::binary);
+    std::ifstream fin(filePath.toStdString(), std::ios::binary);
     char c;
     fin.read(&c, sizeof(char));
     int len = int(c);
@@ -193,7 +224,7 @@ void Archiver::decode() {
         originalName += c;
     }
 
-    std::ofstream fout((getPath(currentFilePath) + SEPARATOR + originalName).toStdString(),
+    std::ofstream fout((getPath(filePath) + SEPARATOR + originalName).toStdString(),
                   std::ios::binary);
 
     fin.read(&c, sizeof(unsigned char));

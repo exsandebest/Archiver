@@ -16,10 +16,16 @@ private:
     QString testPath = "../Archiver/tests/";
 
 private slots:
-    void TestEncode1();
-    void TestEncode2();
-    void TestDecode1();
-    void TestDecode2();
+    void TestEncodeTxt();
+    void TestEncodeJpg();
+    void TestEncodeXxx();
+    void TestEncodeEmpty();
+    void TestEncodeFileNotExists();
+    void TestDecodeTxt();
+    void TestDecodeJpg();
+    void TestDecodeXxx();
+    void TestDecodeEmpty();
+    void TestDecodeFileNotExists();
 
 };
 
