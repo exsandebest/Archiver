@@ -4,7 +4,8 @@
 #include <QMainWindow>
 #include <QObject>
 #include <QProgressBar>
-#include <Node.h>
+#include "Node.h"
+#include <QVector>
 
 class Archiver : public QObject
 {

@@ -8,9 +8,10 @@ Archiver::Archiver(QProgressBar *progressBar) {
 }
 
 const QChar SEPARATOR = '/';
+const int BYTE_SIZE = 8;
 std::map<unsigned char, int> mainMap;
-std::map<unsigned char, QString> table;
-QString code;
+std::map<unsigned char, QVector<bool>> table;
+QVector<bool> code;
 Node *root;
 
 bool comp(Node *&a, Node *&b) { return a->k < b->k; }
@@ -27,7 +28,7 @@ QString Archiver::getExtension(QString str) {
     return str.mid(str.lastIndexOf(".") + 1).toLower();
 }
 
-std::pair<QString, QString> Archiver::err(const char * title, const char * text) {
+std::pair<QString, QString> Archiver::err(const char *title, const char *text) {
     return std::make_pair(QString(title), QString(text));
 }
 
@@ -101,17 +102,17 @@ void Archiver::buildTree() {
 
 void Archiver::buildTable(Node *p) {
     if (p->l != nullptr) {
-        code += '0';
+        code.push_back(0);
         buildTable(p->l);
     }
 
     if (p->r != nullptr) {
-        code += '1';
+        code.push_back(1);
         buildTable(p->r);
     }
 
     if (p->b) table[p->c] = code;
-    code.chop(1);
+    if (!code.isEmpty()) code.pop_back();
 }
 
 void Archiver::encode() {
@@ -120,8 +121,8 @@ void Archiver::encode() {
     std::ifstream fin(filePath.toStdString(), std::ios::binary);
     while (!fin.eof()) {
         fin.read(&c, sizeof(char));
-        QApplication::processEvents();
         ++mainMap[c];
+        QApplication::processEvents();
     }
     --mainMap[c];
 
@@ -132,79 +133,80 @@ void Archiver::encode() {
     std::ofstream fout(newName.toStdString(), std::ios::binary);
     fout << (unsigned char)(cutPath(filePath).length());
     fout << cutPath(filePath).toStdString();
-    fout << (unsigned char)(mainMap.size() >> 8);
+    fout << (unsigned char)(mainMap.size() >> BYTE_SIZE);
     fout << (unsigned char)(mainMap.size());
     std::map<unsigned char, int>::iterator it;
     for (it = mainMap.begin(); it != mainMap.end(); ++it) {
         unsigned char charSelf = it->first;
         fout << charSelf;
         fout << (unsigned char)(table[charSelf].size());
-        QString tmpS = "";
-        if (table[charSelf].size() % 8) {
-            tmpS.fill('0', 8 - (table[charSelf].size() % 8));
+        QVector<bool> currentByteCode = table[charSelf];
+        if (table[charSelf].size() % BYTE_SIZE) {
+            for (int i = 0; i < BYTE_SIZE - (table[charSelf].size() % BYTE_SIZE); ++i) {
+                currentByteCode.push_back(0);
+            }
         }
 
-        tmpS = table[charSelf] + tmpS;
-        unsigned char mychar = 0;
+        unsigned char currentByte = 0;
         int bufferCount = 0;
-        for (int i = 0; i < tmpS.size(); ++i) {
-            mychar <<= 1;
-            if (tmpS[i] == "1") {
-                mychar |= 1;
+        for (int i = 0; i < currentByteCode.size(); ++i) {
+            currentByte <<= 1;
+            if (currentByteCode[i]) {
+                currentByte |= 1;
             }
 
             ++bufferCount;
-            if (bufferCount == 8) {
+            if (bufferCount == BYTE_SIZE) {
                 bufferCount = 0;
-                fout << mychar;
-                mychar = 0;
+                fout << currentByte;
+                currentByte = 0;
             }
         }
     }
 
-    long long sum = 0;
+    long long rawDataSize = 0;
     std::map<unsigned char, int>::iterator q;
     for (q = mainMap.begin(); q != mainMap.end(); ++q) {
-        sum += q->second * table[q->first].size();
+        rawDataSize += q->second * table[q->first].size();
     }
 
-    if (progressBar) progressBar->setMaximum(sum / 8);
-    unsigned char tmpCharSpecial;
-    for (int j = 56; j >= 0; j -= 8) {
-        tmpCharSpecial = (unsigned char)(sum >> j);
-        fout << tmpCharSpecial;
+    if (progressBar) progressBar->setMaximum(rawDataSize / BYTE_SIZE);
+    unsigned char currentByte;
+    for (int j = 64 - BYTE_SIZE; j >= 0; j -= BYTE_SIZE) {
+        currentByte = (unsigned char)(rawDataSize >> j);
+        fout << currentByte;
     }
 
     fin.clear();
     fin.seekg(0, fin.beg);
 
     c = 0;
-    int k = 0;
-    unsigned char z = 0;
+    int bufferCount = 0;
+    currentByte = 0;
     while (!fin.eof()) {
         if (progressBar) progressBar->setValue(progressBar->value() + 1);
         fin.read(&c, sizeof(char));
         if (fin.eof()) break;
-        QString v = table[c];
+        QVector<bool> v = table[c];
         for (int j = 0; j < v.size(); ++j) {
-            z <<= 1;
-            if (v[j] == '1') {
-                z = z | 1;
+            currentByte <<= 1;
+            if (v[j]) {
+                currentByte |= 1;
             }
 
-            ++k;
-            if (k == 8) {
-                k = 0;
-                fout << z;
-                z = 0;
+            ++bufferCount;
+            if (bufferCount == BYTE_SIZE) {
+                bufferCount = 0;
+                fout << currentByte;
+                currentByte = 0;
                 QCoreApplication::processEvents();
             }
         }
     }
 
-    z <<= (8 - k);
-    fout << z;
-    fout << sum;
+    currentByte <<= (BYTE_SIZE - bufferCount);
+    fout << currentByte;
+    fout << rawDataSize;
     fout.close();
     fin.close();
 }
@@ -215,9 +217,9 @@ void Archiver::decode() {
     std::ifstream fin(filePath.toStdString(), std::ios::binary);
     char c;
     fin.read(&c, sizeof(char));
-    int len = int(c);
+    int nameSize = int(c);
     QString originalName = "";
-    for (int i = 0; i < len; ++i) {
+    for (int i = 0; i < nameSize; ++i) {
         fin.read(&c, sizeof(char));
         originalName += c;
     }
@@ -225,49 +227,46 @@ void Archiver::decode() {
     std::ofstream fout((getPath(filePath) + SEPARATOR + originalName).toStdString(),
                   std::ios::binary);
 
-    fin.read(&c, sizeof(unsigned char));
-    len = ((int)c) << 8;
     fin.read(&c, sizeof(char));
-    len |= c;
+    int tableSize = ((int)c) << BYTE_SIZE;
+    fin.read(&c, sizeof(char));
+    tableSize |= c;
     Node *localRoot = new Node();
     Node *p;
-    for (int i = 0; i < len; ++i) {
-        char tmpChar;
-        fin.read(&tmpChar, sizeof(char));
+    for (int i = 0; i < tableSize; ++i) {
+        char charSelf;
+        fin.read(&charSelf, sizeof(char));
         fin.read(&c, sizeof(char));
-        int ln = c;
-        int byteLn = ln / 8 + (ln % 8 ? 1 : 0);
-        char t;
-        std::vector<bool> v;
+        int charCodeSize = c;
+        int charCodeByteSize = charCodeSize / BYTE_SIZE + (charCodeSize % BYTE_SIZE ? 1 : 0);
+        std::vector<bool> charCode;
         int cnt = 0;
-        for (int j = 0; j < byteLn; ++j) {
-            fin.read(&t, sizeof(char));
-            for (int k = 0; k < 8; ++k) {
-                if (t & 128) {
-                    v.push_back(1);
+        for (int j = 0; j < charCodeByteSize; ++j) {
+            fin.read(&c, sizeof(char));
+            for (int k = 0; k < BYTE_SIZE; ++k) {
+                if (c & 128) {
+                    charCode.push_back(1);
                 } else {
-                    v.push_back(0);
+                    charCode.push_back(0);
                 }
 
-                t <<= 1;
+                c <<= 1;
                 cnt++;
-                if (cnt == ln) {
-                    break;
-                }
+                if (cnt == charCodeSize) break;
             }
         }
 
         p = localRoot;
-        for (int j = 0; j < ln; ++j) {
-            if (v[j]) {
+        for (int j = 0; j < charCodeSize; ++j) {
+            if (charCode[j]) {
                 if (p->r == nullptr) {
                     p->r = new Node;
                 }
 
                 p = p->r;
-                if (j == ln - 1) {
+                if (j == charCodeSize - 1) {
                     p->b = true;
-                    p->c = tmpChar;
+                    p->c = charSelf;
                 }
             } else {
                 if (p->l == nullptr) {
@@ -275,36 +274,32 @@ void Archiver::decode() {
                 }
 
                 p = p->l;
-                if (j == ln - 1) {
+                if (j == charCodeSize - 1) {
                     p->b = true;
-                    p->c = tmpChar;
+                    p->c = charSelf;
                 }
             }
         }
 
-        v.clear();
+        charCode.clear();
     }
 
-    long long rawDataLen = 0;
-    char m;
-    unsigned char um;
-    for (int j = 7; j >= 0; --j) {
-        fin.read(&m, sizeof(char));
-        um = (unsigned char)m;
-        long long tmplong = um;
-        tmplong <<= (j * 8);
-        rawDataLen |= tmplong;
+    long long rawDataSize = 0;
+    for (int j = BYTE_SIZE - 1; j >= 0; --j) {
+        fin.read(&c, sizeof(char));
+        long long tmpLong = (unsigned char)c;
+        rawDataSize |= tmpLong << (j * BYTE_SIZE);;
     }
 
-    long long RDLByte = (rawDataLen / 8 + (rawDataLen % 8 ? 1 : 0));
-    if (progressBar) progressBar->setMaximum(RDLByte);
+    long long rawDataByteSize = (rawDataSize / BYTE_SIZE + (rawDataSize % BYTE_SIZE ? 1 : 0));
+    if (progressBar) progressBar->setMaximum(rawDataByteSize);
     Node *cur = localRoot;
-    long long sch = 0;
-    for (int j = 0; j < RDLByte; ++j) {
+    long long cnt = 0;
+    for (int j = 0; j < rawDataByteSize; ++j) {
         if (progressBar) progressBar->setValue(progressBar->value() + 1);
-        fin.read(&m, sizeof(char));
-        for (int k = 0; k < 8; ++k) {
-            if (m & 128) {
+        fin.read(&c, sizeof(char));
+        for (int k = 0; k < BYTE_SIZE; ++k) {
+            if (c & 128) {
                 cur = cur->r;
             } else {
                 cur = cur->l;
@@ -316,9 +311,9 @@ void Archiver::decode() {
                 QCoreApplication::processEvents();
             }
 
-            m <<= 1;
-            ++sch;
-            if (sch == rawDataLen) break;
+            c <<= 1;
+            ++cnt;
+            if (cnt == rawDataSize) break;
         }
     }
 
