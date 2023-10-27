@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include <QTest>
-#include "test.h"
 #include <QApplication>
+#include "test.h"
 
 int main(int argc, char *argv[]) {
     setlocale(LC_ALL, "RUS");
