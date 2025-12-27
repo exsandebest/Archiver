@@ -207,6 +207,7 @@ void Archiver::encode() {
 
     currentByte <<= (BYTE_SIZE - bufferCount);
     fout << currentByte;
+    fout << rawDataSize;
     fout.close();
     fin.close();
 }
