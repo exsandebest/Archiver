@@ -4,22 +4,21 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow) {
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
     this->setMaximumSize(450, 150);
 
-    QGridLayout *mainLayout = new QGridLayout(this->centralWidget());
+    QGridLayout* mainLayout = new QGridLayout(this->centralWidget());
 
-    QPushButton *btnEncode = buttons[0] = new QPushButton("Encode");
+    QPushButton* btnEncode = buttons[0] = new QPushButton("Encode");
     connect(btnEncode, &QPushButton::clicked, this, &MainWindow::on_btnEncode_clicked);
     mainLayout->addWidget(btnEncode, 0, 0);
 
-    QPushButton *btnOpen = buttons[1] = new QPushButton("Open");
+    QPushButton* btnOpen = buttons[1] = new QPushButton("Open");
     connect(btnOpen, &QPushButton::clicked, this, &MainWindow::on_btnOpen_clicked);
     mainLayout->addWidget(btnOpen, 0, 1);
 
-    QPushButton *btnDecode = buttons[2] = new QPushButton("Decode");
+    QPushButton* btnDecode = buttons[2] = new QPushButton("Decode");
     connect(btnDecode, &QPushButton::clicked, this, &MainWindow::on_btnDecode_clicked);
     mainLayout->addWidget(btnDecode, 0, 2);
 
@@ -42,7 +41,8 @@ void MainWindow::on_btnOpen_clicked() {
 }
 
 void MainWindow::on_btnEncode_clicked() {
-    for (auto btn: buttons) btn->setDisabled(true);
+    for (auto btn : buttons)
+        btn->setDisabled(true);
     progressBar->setMaximum(0);
     progressBar->setValue(0);
     progressBar->setVisible(true);
@@ -54,21 +54,23 @@ void MainWindow::on_btnEncode_clicked() {
         QMessageBox::warning(this, errorPair.first, errorPair.second);
     }
     progressBar->setVisible(false);
-    for (auto btn: buttons) btn->setDisabled(false);
+    for (auto btn : buttons)
+        btn->setDisabled(false);
 }
 
 void MainWindow::on_btnDecode_clicked() {
-    for (auto btn: buttons) btn->setDisabled(true);
+    for (auto btn : buttons)
+        btn->setDisabled(true);
     progressBar->setMinimum(0);
     progressBar->setValue(0);
     progressBar->setVisible(true);
     try {
         a->decode(path);
         QMessageBox::information(this, "OK", "Successfully decoded!");
-    }  catch (std::pair<QString, QString> errorPair) {
+    } catch (std::pair<QString, QString> errorPair) {
         QMessageBox::warning(this, errorPair.first, errorPair.second);
     }
     progressBar->setVisible(false);
-    for (auto btn: buttons) btn->setDisabled(false);
-
+    for (auto btn : buttons)
+        btn->setDisabled(false);
 }
