@@ -1,6 +1,7 @@
 #include "archiver.h"
 #include <fstream>
 #include <QApplication>
+#include <QCoreApplication>
 #include <QFile>
 
 Archiver::Archiver(QProgressBar *progressBar) {
@@ -12,7 +13,7 @@ const int BYTE_SIZE = 8;
 std::map<unsigned char, int> mainMap;
 std::map<unsigned char, QVector<bool>> table;
 QVector<bool> code;
-Node *root;
+Node *root = nullptr;
 
 bool comp(Node *&a, Node *&b) { return a->k < b->k; }
 
@@ -57,8 +58,10 @@ void Archiver::decode(QString path) {
 }
 
 void Archiver::reset() {
-    root->clear();
-    root = nullptr;
+    if (root != nullptr) {
+        root->clear();
+        root = nullptr;
+    }
     mainMap.clear();
     table.clear();
     code.clear();
@@ -119,12 +122,14 @@ void Archiver::encode() {
     reset();
     char c;
     std::ifstream fin(filePath.toStdString(), std::ios::binary);
-    while (!fin.eof()) {
-        fin.read(&c, sizeof(char));
-        ++mainMap[c];
+    while (fin.get(c)) {
+        ++mainMap[static_cast<unsigned char>(c)];
         QApplication::processEvents();
     }
-    --mainMap[c];
+
+    if (mainMap.empty()) {
+        throw err("Error", "File is empty");
+    }
 
     buildTree();
     buildTable(root);
@@ -320,5 +325,3 @@ void Archiver::decode() {
     fout.close();
     fin.close();
 }
-
-
