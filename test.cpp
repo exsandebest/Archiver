@@ -2,7 +2,7 @@
 #include <QFile>
 #include "archiver.h"
 
-Test::Test(QObject *parent) : QObject(parent) {}
+Test::Test(QObject* parent) : QObject(parent) {}
 
 void Test::TestEncodeTxt() {
     QString testInputPath = testPath + "encode/a.txt";
@@ -38,7 +38,7 @@ void Test::TestEncodeXxx() {
         Archiver a;
         a.encode(testInputPath);
         QVERIFY(false);
-    }  catch (std::pair<QString, QString> errorPair) {
+    } catch (std::pair<QString, QString> errorPair) {
         QCOMPARE(errorPair.first, "Error");
         QCOMPARE(errorPair.second, "You can't encode '.xxx' files");
     }
@@ -50,7 +50,7 @@ void Test::TestEncodeEmpty() {
         Archiver a;
         a.encode(testInputPath);
         QVERIFY(false);
-    }  catch (std::pair<QString, QString> errorPair) {
+    } catch (std::pair<QString, QString> errorPair) {
         QCOMPARE(errorPair.first, "Empty path");
         QCOMPARE(errorPair.second, "Please select a file");
     }
@@ -62,7 +62,7 @@ void Test::TestEncodeFileNotExists() {
         Archiver a;
         a.encode(testInputPath);
         QVERIFY(false);
-    }  catch (std::pair<QString, QString> errorPair) {
+    } catch (std::pair<QString, QString> errorPair) {
         QCOMPARE(errorPair.first, "No such file");
         QCOMPARE(errorPair.second, "File does not exist");
     }
@@ -102,7 +102,7 @@ void Test::TestDecodeXxx() {
         Archiver a;
         a.decode(testInputPath);
         QVERIFY(false);
-    }  catch (std::pair<QString, QString> errorPair) {
+    } catch (std::pair<QString, QString> errorPair) {
         QCOMPARE(errorPair.first, "Error");
         QCOMPARE(errorPair.second, "You can decode only '.xxx' files");
     }
@@ -114,7 +114,7 @@ void Test::TestDecodeEmpty() {
         Archiver a;
         a.decode(testInputPath);
         QVERIFY(false);
-    }  catch (std::pair<QString, QString> errorPair) {
+    } catch (std::pair<QString, QString> errorPair) {
         QCOMPARE(errorPair.first, "Empty path");
         QCOMPARE(errorPair.second, "Please select a file");
     }
@@ -126,19 +126,19 @@ void Test::TestDecodeFileNotExists() {
         Archiver a;
         a.decode(testInputPath);
         QVERIFY(false);
-    }  catch (std::pair<QString, QString> errorPair) {
+    } catch (std::pair<QString, QString> errorPair) {
         QCOMPARE(errorPair.first, "No such file");
         QCOMPARE(errorPair.second, "File does not exist");
     }
 }
 
-QByteArray Test::fileChecksum(const QString &fileName, QCryptographicHash::Algorithm hashAlgorithm) {
+QByteArray Test::fileChecksum(const QString& fileName, QCryptographicHash::Algorithm hashAlgorithm) {
     QFile f(fileName);
-       if (f.open(QFile::ReadOnly)) {
-           QCryptographicHash hash(hashAlgorithm);
-           if (hash.addData(&f)) {
-               return hash.result();
-           }
-       }
+    if (f.open(QFile::ReadOnly)) {
+        QCryptographicHash hash(hashAlgorithm);
+        if (hash.addData(&f)) {
+            return hash.result();
+        }
+    }
     return QByteArray();
 }

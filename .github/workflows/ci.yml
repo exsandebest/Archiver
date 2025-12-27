@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qtbase5-dev qttools5-dev-tools clang-format
+
+      - name: Run clang-format
+        run: clang-format --dry-run --Werror $(git ls-files '*.cpp' '*.h')
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qtbase5-dev qttools5-dev-tools
+
+      - name: Configure
+        run: qmake
+
+      - name: Build
+        run: make -j2
+
+  test:
+    runs-on: ubuntu-latest
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qtbase5-dev qttools5-dev-tools
+
+      - name: Configure
+        run: qmake
+
+      - name: Build
+        run: make -j2
+
+      - name: Run tests
+        run: ./Archiver --test

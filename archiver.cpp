@@ -3,32 +3,24 @@
 #include <QApplication>
 #include <QFile>
 
-Archiver::Archiver(QProgressBar *progressBar) {
-    this->progressBar = progressBar;
-}
+Archiver::Archiver(QProgressBar* progressBar) { this->progressBar = progressBar; }
 
 const QChar SEPARATOR = '/';
 const int BYTE_SIZE = 8;
 std::map<unsigned char, int> mainMap;
 std::map<unsigned char, QVector<bool>> table;
 QVector<bool> code;
-Node *root;
+Node* root = nullptr;
 
-bool comp(Node *&a, Node *&b) { return a->k < b->k; }
+bool comp(Node*& a, Node*& b) { return a->k < b->k; }
 
-QString Archiver::getPath(QString str) {
-    return str.left(str.lastIndexOf(SEPARATOR));
-}
+QString Archiver::getPath(QString str) { return str.left(str.lastIndexOf(SEPARATOR)); }
 
-QString Archiver::cutPath(QString str) {
-    return str.right(str.size() - str.lastIndexOf(SEPARATOR) - 1);
-}
+QString Archiver::cutPath(QString str) { return str.right(str.size() - str.lastIndexOf(SEPARATOR) - 1); }
 
-QString Archiver::getExtension(QString str) {
-    return str.mid(str.lastIndexOf(".") + 1).toLower();
-}
+QString Archiver::getExtension(QString str) { return str.mid(str.lastIndexOf(".") + 1).toLower(); }
 
-std::pair<QString, QString> Archiver::err(const char *title, const char *text) {
+std::pair<QString, QString> Archiver::err(const char* title, const char* text) {
     return std::make_pair(QString(title), QString(text));
 }
 
@@ -57,18 +49,20 @@ void Archiver::decode(QString path) {
 }
 
 void Archiver::reset() {
-    root->clear();
-    root = nullptr;
+    if (root != nullptr) {
+        root->clear();
+        root = nullptr;
+    }
     mainMap.clear();
     table.clear();
     code.clear();
 }
 
 void Archiver::buildTree() {
-    QVector<Node *> v;
+    QVector<Node*> v;
     std::map<unsigned char, int>::iterator k;
     for (k = mainMap.begin(); k != mainMap.end(); ++k) {
-        Node *p = new Node();
+        Node* p = new Node();
         p->c = k->first;
         p->k = k->second;
         p->b = true;
@@ -76,7 +70,7 @@ void Archiver::buildTree() {
     }
 
     if (v.size() == 1) {
-        Node *q = new Node();
+        Node* q = new Node();
         q->l = new Node();
         q->l->b = true;
         q->l->c = v.front()->c;
@@ -90,7 +84,7 @@ void Archiver::buildTree() {
             v.pop_front();
             tr = v.front();
             v.pop_front();
-            Node *tmp = new Node();
+            Node* tmp = new Node();
             tmp->l = tl;
             tmp->r = tr;
             tmp->k = tl->k + tr->k;
@@ -100,7 +94,7 @@ void Archiver::buildTree() {
     }
 }
 
-void Archiver::buildTable(Node *p) {
+void Archiver::buildTable(Node* p) {
     if (p->l != nullptr) {
         code.push_back(0);
         buildTable(p->l);
@@ -111,20 +105,24 @@ void Archiver::buildTable(Node *p) {
         buildTable(p->r);
     }
 
-    if (p->b) table[p->c] = code;
-    if (!code.isEmpty()) code.pop_back();
+    if (p->b)
+        table[p->c] = code;
+    if (!code.isEmpty())
+        code.pop_back();
 }
 
 void Archiver::encode() {
     reset();
     char c;
     std::ifstream fin(filePath.toStdString(), std::ios::binary);
-    while (!fin.eof()) {
-        fin.read(&c, sizeof(char));
-        ++mainMap[c];
+    while (fin.read(&c, sizeof(char))) {
+        ++mainMap[static_cast<unsigned char>(c)];
         QApplication::processEvents();
     }
-    --mainMap[c];
+
+    if (mainMap.empty()) {
+        throw err("Error", "File is empty");
+    }
 
     buildTree();
     buildTable(root);
@@ -170,7 +168,8 @@ void Archiver::encode() {
         rawDataSize += q->second * table[q->first].size();
     }
 
-    if (progressBar) progressBar->setMaximum(rawDataSize / BYTE_SIZE);
+    if (progressBar)
+        progressBar->setMaximum(rawDataSize / BYTE_SIZE);
     unsigned char currentByte;
     for (int j = 64 - BYTE_SIZE; j >= 0; j -= BYTE_SIZE) {
         currentByte = (unsigned char)(rawDataSize >> j);
@@ -184,10 +183,12 @@ void Archiver::encode() {
     int bufferCount = 0;
     currentByte = 0;
     while (!fin.eof()) {
-        if (progressBar) progressBar->setValue(progressBar->value() + 1);
+        if (progressBar)
+            progressBar->setValue(progressBar->value() + 1);
         fin.read(&c, sizeof(char));
-        if (fin.eof()) break;
-        QVector<bool> v = table[c];
+        if (fin.eof())
+            break;
+        QVector<bool> v = table[static_cast<unsigned char>(c)];
         for (int j = 0; j < v.size(); ++j) {
             currentByte <<= 1;
             if (v[j]) {
@@ -224,15 +225,14 @@ void Archiver::decode() {
         originalName += c;
     }
 
-    std::ofstream fout((getPath(filePath) + SEPARATOR + originalName).toStdString(),
-                  std::ios::binary);
+    std::ofstream fout((getPath(filePath) + SEPARATOR + originalName).toStdString(), std::ios::binary);
 
     fin.read(&c, sizeof(char));
     int tableSize = ((int)c) << BYTE_SIZE;
     fin.read(&c, sizeof(char));
     tableSize |= c;
-    Node *localRoot = new Node();
-    Node *p;
+    Node* localRoot = new Node();
+    Node* p;
     for (int i = 0; i < tableSize; ++i) {
         char charSelf;
         fin.read(&charSelf, sizeof(char));
@@ -252,7 +252,8 @@ void Archiver::decode() {
 
                 c <<= 1;
                 cnt++;
-                if (cnt == charCodeSize) break;
+                if (cnt == charCodeSize)
+                    break;
             }
         }
 
@@ -288,15 +289,18 @@ void Archiver::decode() {
     for (int j = BYTE_SIZE - 1; j >= 0; --j) {
         fin.read(&c, sizeof(char));
         long long tmpLong = (unsigned char)c;
-        rawDataSize |= tmpLong << (j * BYTE_SIZE);;
+        rawDataSize |= tmpLong << (j * BYTE_SIZE);
+        ;
     }
 
     long long rawDataByteSize = (rawDataSize / BYTE_SIZE + (rawDataSize % BYTE_SIZE ? 1 : 0));
-    if (progressBar) progressBar->setMaximum(rawDataByteSize);
-    Node *cur = localRoot;
+    if (progressBar)
+        progressBar->setMaximum(rawDataByteSize);
+    Node* cur = localRoot;
     long long cnt = 0;
     for (int j = 0; j < rawDataByteSize; ++j) {
-        if (progressBar) progressBar->setValue(progressBar->value() + 1);
+        if (progressBar)
+            progressBar->setValue(progressBar->value() + 1);
         fin.read(&c, sizeof(char));
         for (int k = 0; k < BYTE_SIZE; ++k) {
             if (c & 128) {
@@ -313,12 +317,14 @@ void Archiver::decode() {
 
             c <<= 1;
             ++cnt;
-            if (cnt == rawDataSize) break;
+            if (cnt == rawDataSize)
+                break;
         }
     }
 
     fout.close();
     fin.close();
+    if (localRoot != nullptr) {
+        localRoot->clear();
+    }
 }
-
-

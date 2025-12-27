@@ -22,3 +22,9 @@ A simple archiving Qt application based on the Huffman algorithm
 * [exsandebest](https://github.com/exsandebest) ([Repository](https://github.com/exsandebest/Archiver))
 * [klimkomx](https://github.com/klimkomx) ([Repository](https://github.com/klimkomx/HuffmanArchivator))
 * [hensuto](https://gitlab.com/hensuto) ([Repository](https://gitlab.com/hensuto/huffman-archiver))
+
+## Testing
+To run the Qt-based checks without launching the UI, build the project and execute:
+```bash
+QT_QPA_PLATFORM=offscreen ./Archiver --test
+```

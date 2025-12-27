@@ -5,17 +5,16 @@
 #include <QCryptographicHash>
 #include <QTest>
 
-class Test : public QObject
-{
+class Test : public QObject {
     Q_OBJECT
-public:
-    explicit Test(QObject *parent = 0);
+  public:
+    explicit Test(QObject* parent = 0);
 
-private:
-    QByteArray fileChecksum(const QString &fileName, QCryptographicHash::Algorithm hashAlgorithm);
+  private:
+    QByteArray fileChecksum(const QString& fileName, QCryptographicHash::Algorithm hashAlgorithm);
     QString testPath = "../Archiver/tests/";
 
-private slots:
+  private slots:
     void TestEncodeTxt();
     void TestEncodeJpg();
     void TestEncodeXxx();
@@ -26,7 +25,6 @@ private slots:
     void TestDecodeXxx();
     void TestDecodeEmpty();
     void TestDecodeFileNotExists();
-
 };
 
 #endif // TEST_H

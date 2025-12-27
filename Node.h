@@ -2,7 +2,7 @@
 #define NODE_H
 
 class Node {
-public:
+  public:
     bool b;
     unsigned char c;
     int k;
@@ -14,7 +14,7 @@ public:
         b = false;
     }
 
-    Node(Node *x, Node *y) {
+    Node(Node* x, Node* y) {
         l = x;
         r = y;
         k = x->k + y->k;
@@ -23,8 +23,9 @@ public:
 
     void clear() { clear(this); }
 
-    void clear(Node *p) {
-        if (p == nullptr) return;
+    void clear(Node* p) {
+        if (p == nullptr)
+            return;
         clear(p->l);
         clear(p->r);
         delete p;
